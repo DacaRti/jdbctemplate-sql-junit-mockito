@@ -1,0 +1,162 @@
+DROP TABLE IF Exists holidays CASCADE;
+DROP TABLE IF EXISTS addresses CASCADE;
+DROP TABLE IF EXISTS durations CASCADE;
+DROP TABLE IF EXISTS groups CASCADE;
+DROP TABLE IF EXISTS students CASCADE;
+DROP TABLE IF EXISTS classrooms CASCADE;
+DROP TABLE IF EXISTS faculties CASCADE;
+DROP TABLE IF EXISTS lessons CASCADE;
+DROP TABLE IF EXISTS subjects CASCADE;
+DROP TABLE IF EXISTS teachers_subjects CASCADE;
+DROP TABLE IF EXISTS teachers CASCADE;
+DROP TABLE IF EXISTS vacations CASCADE;
+DROP TABLE IF EXISTS syllabuses CASCADE;
+DROP TABLE IF EXISTS groups_lessons CASCADE;
+DROP TABLE IF EXISTS syllabuses_subjects CASCADE;
+
+CREATE TABLE holidays
+(
+    id   BIGSERIAL   NOT NULL PRIMARY KEY,
+    name VARCHAR(30) NOT NULL,
+    date DATE        NOT NULL
+);
+
+CREATE TABLE ADDRESSES
+(
+    id       BIGSERIAL   NOT NULL PRIMARY KEY,
+    city     VARCHAR(30) NOT NULL,
+    street   VARCHAR(30),
+    postcode VARCHAR(30),
+    district VARCHAR(30)
+);
+
+CREATE TABLE CLASSROOMS
+(
+    id       BIGSERIAL NOT NULL PRIMARY KEY,
+    number   INTEGER   NOT NULL,
+    floor    INTEGER   NOT NULL,
+    capacity INTEGER
+);
+
+CREATE TABLE SYLLABUSES
+(
+    id        BIGSERIAL NOT NULL PRIMARY KEY,
+    full_time INTEGER
+);
+
+CREATE TABLE FACULTIES
+(
+    id          BIGSERIAL   NOT NULL PRIMARY KEY,
+    name        VARCHAR(30) NOT NULL,
+    syllabus_id INTEGER     NOT NULL,
+    FOREIGN KEY (syllabus_id) REFERENCES SYLLABUSES (id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE SUBJECTS
+(
+    id   BIGSERIAL   NOT NULL PRIMARY KEY,
+    name VARCHAR(30) NOT NULL
+);
+
+CREATE TABLE TEACHERS
+(
+    id         BIGSERIAL   NOT NULL PRIMARY KEY,
+    first_name VARCHAR(30) NOT NULL,
+    last_name  VARCHAR(30) NOT NULL,
+    gender     VARCHAR(30),
+    email      VARCHAR(50),
+    birth_date DATE,
+    phone      VARCHAR(30),
+    address_id INTEGER     NOT NULL,
+    FOREIGN KEY (address_id) REFERENCES ADDRESSES (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    degree     VARCHAR(30),
+    rank       VARCHAR(30),
+    faculty_id INTEGER,
+    FOREIGN KEY (faculty_id) REFERENCES FACULTIES (id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE DURATIONS
+(
+    id         BIGSERIAL Not Null PRIMARY KEY,
+    start_time TIME      NOT NULL,
+    end_time   TIME      NOT NULL
+);
+
+CREATE TABLE LESSONS
+(
+    id           BIGSERIAL NOT NULL PRIMARY KEY,
+    subject_id   INTEGER,
+    FOREIGN KEY (subject_id) REFERENCES SUBJECTS (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    classroom_id INTEGER,
+    FOREIGN KEY (classroom_id) REFERENCES CLASSROOMS (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    date         DATE      NOT NULL,
+    duration_id  INTEGER,
+    FOREIGN KEY (duration_id) REFERENCES DURATIONS (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    teacher_id   INTEGER,
+    FOREIGN KEY (teacher_id) REFERENCES TEACHERS (id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE GROUPS
+(
+    id         BIGSERIAL   NOT NULL PRIMARY KEY,
+    name       VARCHAR(30) NOT NULL,
+    course     INTEGER     NOT NULL,
+    faculty_id INTEGER,
+    FOREIGN KEY (faculty_id) references FACULTIES (id) ON UPDATE CASCADE ON DELETE CASCADE
+
+);
+
+CREATE TABLE STUDENTS
+(
+    id         BIGSERIAL   NOT NULL PRIMARY KEY,
+    group_id   INTEGER,
+    FOREIGN KEY (group_id) REFERENCES groups (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    first_name VARCHAR(30) NOT NULL,
+    last_name  VARCHAR(30) NOT NULL,
+    gender     VARCHAR(30),
+    email      VARCHAR(50),
+    birth_date DATE,
+    phone      VARCHAR(30),
+    address_id INTEGER,
+    FOREIGN KEY (address_id) REFERENCES ADDRESSES (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    study_form VARCHAR(30)
+);
+
+CREATE TABLE VACATIONS
+(
+    id         BIGSERIAL NOT NULL PRIMARY KEY,
+    teacher_id INTEGER,
+    FOREIGN KEY (teacher_id) REFERENCES TEACHERS (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    start_date DATE      NOT NULL,
+    end_date   DATE      NOT NULL,
+    is_paid    BOOLEAN,
+    cause      VARCHAR(50)
+);
+
+CREATE TABLE GROUPS_LESSONS
+(
+    group_id  INTEGER,
+    FOREIGN KEY (group_id) REFERENCES GROUPS (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    lesson_id INTEGER,
+    FOREIGN KEY (lesson_id) REFERENCES LESSONS (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    UNIQUE (group_id, lesson_id)
+);
+
+CREATE TABLE TEACHERS_SUBJECTS
+(
+    teacher_id INTEGER,
+    FOREIGN KEY (teacher_id) REFERENCES TEACHERS (id),
+    subject_id INTEGER,
+    FOREIGN KEY (subject_id) REFERENCES SUBJECTS (id),
+    UNIQUE (teacher_id, subject_id)
+);
+
+CREATE TABLE SYLLABUSES_SUBJECTS
+(
+    syllabus_id INTEGER,
+    FOREIGN KEY (syllabus_id) REFERENCES SYLLABUSES (id),
+    subject_id  INTEGER,
+    FOREIGN KEY (subject_id) REFERENCES SUBJECTS (id),
+    UNIQUE (syllabus_id, subject_id)
+);
+
